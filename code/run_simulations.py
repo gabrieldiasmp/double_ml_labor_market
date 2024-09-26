@@ -66,33 +66,6 @@ class GenerateDGP():
     def generate_post_selection_regularization_dgp(self, n=100, T=10, px=50, pz=5, rho_e=0.8, rho_u=0.8, rho_x=0.8):
         # Initialize lists to store results
         results = []
-
-        #################### Generate individual heterogeneity
-        # cov_matrix = np.fromfunction(lambda i, j: 0.5 ** np.abs(i - j), (n, n))
-        # e = np.random.multivariate_normal(mean=np.zeros(n), cov=cov_matrix * (4 / T))
-        
-        #################### Initial disturbances
-        # epsilon = np.zeros((n, T))
-        # u = np.zeros((n, T))
-        # nu = np.random.multivariate_normal([0, 0], [[1, 0.5], [0.5, 1]], size=(n, T))
-        
-        # for t in range(T):
-        #     if t == 0:
-        #         epsilon[:, t] = nu[:, t, 0]
-        #         u[:, t] = nu[:, t, 1]
-        #     else:
-        #         epsilon[:, t] = rho_e * epsilon[:, t-1] + nu[:, t, 0]
-        #         u[:, t] = rho_u * u[:, t-1] + nu[:, t, 1]
-        
-        ###################### Generate x
-        # x = np.zeros((n, T, px))
-        # for j in range(px):
-        #     for t in range(T):
-        #         if t == 0:
-        #             x[:, t, j] = e / (1 - rho_z) + np.sqrt(1 / (1 - rho_z ** 2)) * np.random.randn(n)
-        #         else:
-        #             x[:, t, j] = e + rho_z * x[:, t-1, j] + np.random.randn(n)
-        
         
         e = self.generate_individual_heterogeneity(n, T)
         epsilon, u = self.generate_disturbances(n, T, rho_e, rho_u)
