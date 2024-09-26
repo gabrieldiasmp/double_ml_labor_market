@@ -33,7 +33,7 @@ At the main.py file, you can run the simulation that compares Pooled OLS, FE 2SL
 
 
 To run the simulation, the steps are the following:
-    - python main.py
+- python main.py
 
 ## How to run the empirical analysis
 
