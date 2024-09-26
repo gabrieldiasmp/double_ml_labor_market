@@ -23,17 +23,17 @@ immigration by non-EU citizens on the employment of EU natives.
 You can create your own virtual environment using the requirements.txt file. The steps are the following:
 
 - Create a new virtual environment: 
-    - virtualenv venv
-    - source venv/bin/activate
-    - pip install requirements.txt
+    - `virtualenv venv`
+    - `source venv/bin/activate`
+    - `pip install requirements.txt`
 
 
 ## How to run the simulation
-At the main.py file, you can run the simulation that compares Pooled OLS, FE 2SLS, DML: LASSO, DML: XGBoost and DML: Random Forest. The simulation will compare different unit sizes (15, 50, 100, 200) at a fixed length size (T = 10). 
+At the main.py file, you can run the simulation that compares `Pooled OLS`, `FE 2SLS`, `DML: LASSO`, `DML: XGBoost` and `DML: Random Forest`. The simulation will compare different unit sizes `(15, 50, 100, 200)` at a fixed length size `(T = 10)`. 
 
 
 To run the simulation, the steps are the following:
-- python main.py
+- `python code/main.py`
 
 ## How to run the empirical analysis
 
