@@ -82,9 +82,6 @@ class ProcessingPipeline:
             'inst3b': ['nbosds12', 'noward12', 'nkosds12', 'nbos_ep', 'nowar_ep', 'nkos_ep','nbos_ls', 'nowar_ls', 'nkos_ls', 'nbos_rr', 'nowar_rr', 'nkos_rr'] # 
         }
 
-        dependent = ['lne_p']
-        year_index_variable = ['year_datetime']
-
         # Define endog, exog, and instruments based on the interactions_institutions flag
         if self.interactions_institutions:
             endog = self.model_features["non_eu_immigration_share"] + ['NEU_ep', 'NEU_ls', 'NEU_rr']
@@ -100,11 +97,12 @@ class ProcessingPipeline:
             instruments = self.model_instruments["first_instruments"]
             
         self.features = {
-            "dependent": dependent,
+            "dependent": ['lne_p'],
             "endog": endog,
             "exog": exog,
             "instruments": instruments,
-            "year_index_variable": year_index_variable
+            "year_index_variable": ['year_datetime'],
+            "institutions": self.model_features["institutions"]
         }
 
     def get_sample(self, df_immigration):
@@ -119,10 +117,10 @@ class ProcessingPipeline:
             (["country"]+
              self.features["dependent"]+
              self.features["endog"]+
+             self.model_features["institutions"]+
              self.features["exog"]+
              self.features["instruments"]+
-             self.features["year_index_variable"]+             
-             self.model_features["country"])].dropna()
+             self.features["year_index_variable"])].dropna()
         
         #country_without_is = [i for i in self.model_features["country"] if i not in ["is", 'ch', 'lu', 'gr']]
         

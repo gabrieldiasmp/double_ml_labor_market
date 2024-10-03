@@ -17,12 +17,12 @@ def main():
     processing_pipeline = ProcessingPipeline()
     df_immigration = processing_pipeline.run()
 
-    logger.info("--------- Exporting sample to excel")
-    df_immigration.to_excel(REPO_DIR / "data/df_immigration_sample.xlsx", index=False)
+    # logger.info("--------- Exporting sample to excel")
+    # df_immigration.to_excel(REPO_DIR / "data/df_immigration_sample.xlsx", index=False)
 
-    # logger.info("--------- Exploratory analysis")
-    # exploratory_analysis = ReportPipeline(df_immigration, processing_pipeline.features).run()
-
+    logger.info("--------- Exploratory analysis")
+    descriptive_table = ReportPipeline(df_immigration, processing_pipeline.features).run()
+    descriptive_table.to_excel(REPO_DIR / "data/descriptive_statistics.xlsx")
 
     ### Run modeling
 
@@ -32,5 +32,5 @@ def main():
 
 if __name__ == "__main__":
     
-    print(main())
+    main()
 
