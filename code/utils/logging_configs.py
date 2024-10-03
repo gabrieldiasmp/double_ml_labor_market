@@ -1,6 +1,6 @@
 import logging
 
-def setup_logging_simulation(path):
+def setup_logging(path):
     # Configure logging with timestamps
     logging.basicConfig(
         filename=path,

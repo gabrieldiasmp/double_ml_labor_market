@@ -28,8 +28,8 @@ from linearmodels.iv import IV2SLS
 from econml.iv.dml import NonParamDMLIV, DMLIV
 from econml.sklearn_extensions.linear_model import StatsModelsLinearRegression
 
-from logging_configs import setup_logging_simulation
-logger = setup_logging_simulation('model_simulation.log')
+from utils.logging_configs import setup_logging
+logger = setup_logging('model_simulation.log')
 
 HYPERPARAMETERS_PATH = json_path = "/Users/gabrieldiasmp/Documents/pasta_gabriel/codigo/master_thesis/code/hyperparameters/"
 

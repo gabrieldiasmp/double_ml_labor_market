@@ -5,8 +5,8 @@ from sklearn.base import clone
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 
-from run_simulations import GenerateDGP
-from run_models import CausalInferenceModels
+from simulation.generate_simulation_dgp import GenerateDGP
+from empirical_analysis.run_models import CausalInferenceModels
 
 from logging_configs import setup_logging_simulation
 logger = setup_logging_simulation('model_hyperparameters.log')

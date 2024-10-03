@@ -1,12 +1,12 @@
 import pandas as pd
 import numpy as np
 from pathlib import Path
-from run_simulations import GenerateDGP
-from run_models import CausalInferenceModels
+from simulation.generate_simulation_dgp import GenerateDGP
+from empirical_analysis.run_models import CausalInferenceModels
 from utils.import_configs import import_hyperparameters
 
-from logging_configs import setup_logging_simulation
-logger = setup_logging_simulation('model_simulation.log')
+from utils.logging_configs import setup_logging
+logger = setup_logging('model_simulation.log')
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
