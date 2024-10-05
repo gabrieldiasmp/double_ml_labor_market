@@ -123,7 +123,16 @@ class CausalInferenceModels:
             results_df = generate_results_for_multiple_endogenous_variables(fit_obj, framework)
 
         return results_df
-    
+
+    def generate_rmse_df(self, nuisance_loss_dict, model):
+        df = {
+            'rmse_g(x)': nuisance_loss_dict['ml_l'][0][0],
+            'rmse_m(x)': nuisance_loss_dict['ml_r'][0][0],
+            'model': model  
+        }
+
+        return df
+
     def pooled_2sls(self):
         df_2sls = self.df.copy()
         # Convert to panel data format
@@ -225,12 +234,33 @@ class CausalInferenceModels:
 
     def dml_lasso(self, obj_dml_data):
 
-        # For Lasso
-        learner_lasso = make_pipeline(StandardScaler(), Lasso(alpha=0.01, max_iter=1000, random_state = random.seed(1234)))
+        if self.hp_params:
+            logger.info("Reading LASSO hyperparameters")
+            instrument_key = list(self.hp_params["lasso"].keys())[2]
+            endogenous_key = list(self.hp_params["lasso"]['ml_l'].keys())[0]
 
-        ml_l_lasso = clone(learner_lasso)
-        ml_m_lasso = clone(learner_lasso)
-        ml_r_lasso = clone(learner_lasso)
+            # Extract hyperparameters for ml_l, ml_m, and ml_r
+            ml_l_params = self.hp_params["lasso"]['ml_l'][endogenous_key][0][0]
+            ml_r_params = self.hp_params["lasso"]['ml_r'][endogenous_key][0][0]
+            ml_m_params = self.hp_params["lasso"][instrument_key][endogenous_key][0][0]  # Adjust this key based on the desired instrument
+
+            def create_lasso_regressor(params):
+                return make_pipeline(
+                    StandardScaler(), 
+                    Lasso(alpha=params["lasso__alpha"], max_iter=10000, random_state = random.seed(1234)))
+
+            # Create the RandomForestRegressor objects
+            ml_l_lasso = create_lasso_regressor(ml_l_params)
+            ml_m_lasso = create_lasso_regressor(ml_m_params)
+            ml_r_lasso = create_lasso_regressor(ml_r_params)
+
+        else:
+            learner_lasso = make_pipeline(StandardScaler(), Lasso(alpha=0.05, max_iter=1000, random_state = random.seed(1234)))
+
+            ml_l_lasso = clone(learner_lasso)
+            ml_m_lasso = clone(learner_lasso)
+            ml_r_lasso = clone(learner_lasso)
+
 
         # For Lasso
         dml_pliv_obj_lasso = dml.DoubleMLPLIV(obj_dml_data, ml_l_lasso, ml_m_lasso, ml_r_lasso)
@@ -239,16 +269,43 @@ class CausalInferenceModels:
         lasso_fit = dml_pliv_obj_lasso.fit()
 
         results_df = self.generate_point_inference(fit_obj=lasso_fit, model_name="DML: LASSO", framework="doubleml")
-                
-        return results_df # Display the DataFrame
+
+        rmse_lasso = self.generate_rmse_df(dml_pliv_obj_lasso.evaluate_learners(), "DML: LASSO")
+
+        return results_df, rmse_lasso # Display the DataFrame
 
     def dml_xgboost(self, obj_dml_data):
-        learner_boosting = XGBRegressor(n_jobs=-1, objective = "reg:squarederror",
-                            eta=0.1, n_estimators=50)
-        
-        ml_l_boosting = clone(learner_boosting)
-        ml_m_boosting = clone(learner_boosting)
-        ml_r_boosting = clone(learner_boosting)
+
+        if self.hp_params:
+            instrument_key = list(self.hp_params["xgboost"].keys())[2]
+            endogenous_key = list(self.hp_params["xgboost"]['ml_l'].keys())[0]
+
+            # Extract hyperparameters for ml_l, ml_m, and ml_r
+            ml_l_params = self.hp_params["xgboost"]['ml_l'][endogenous_key][0][0]
+            ml_r_params = self.hp_params["xgboost"]['ml_r'][endogenous_key][0][0]
+            ml_m_params = self.hp_params["xgboost"][instrument_key][endogenous_key][0][0]  # Adjust this key based on the desired instrument
+
+            def create_xgboost_regressor(params):
+                return XGBRegressor(
+                    learning_rate=params['learning_rate'],
+                    max_depth=params['max_depth'],
+                    n_estimators=params['n_estimators'],
+                    n_jobs=-1  # Use all available cores
+                )
+
+            # Create the RandomForestRegressor objects
+            ml_l_boosting = create_xgboost_regressor(ml_l_params)
+            ml_m_boosting = create_xgboost_regressor(ml_m_params)
+            ml_r_boosting = create_xgboost_regressor(ml_r_params)
+
+        else:
+            learner_boosting = XGBRegressor(n_jobs=-1, objective = "reg:squarederror",
+                                eta=0.1, n_estimators=50)
+            
+            ml_l_boosting = clone(learner_boosting)
+            ml_m_boosting = clone(learner_boosting)
+            ml_r_boosting = clone(learner_boosting)
+
 
         # For boosting
         dml_pliv_obj_boosting = dml.DoubleMLPLIV(obj_dml_data, ml_l_boosting, ml_m_boosting, ml_r_boosting)
@@ -257,8 +314,10 @@ class CausalInferenceModels:
         fit_obj = dml_pliv_obj_boosting.fit()  # Fit and show summary for boosting
 
         results_df = self.generate_point_inference(fit_obj=fit_obj, model_name="DML: XGBoost", framework="doubleml")
-                
-        return results_df # Display the DataFrame
+
+        rmse_xgboost = self.generate_rmse_df(dml_pliv_obj_boosting.evaluate_learners(), "DML: XGBoost")
+
+        return results_df, rmse_xgboost # Display the DataFrame
 
     def dml_gbm(self, obj_dml_data):
         learner_boosting = GradientBoostingRegressor(n_estimators=20, max_depth=5, learning_rate=0.01, random_state = random.seed(1234), n_jobs=-1)
@@ -276,7 +335,7 @@ class CausalInferenceModels:
 
         results_df = self.generate_point_inference(fit_obj=fit_obj, model_name="DML: Gradient Boosting", framework="doubleml")
                 
-        return results_df # Display the DataFrame
+        return results_df, fit_obj # Display the DataFrame
 
     def dml_random_forest(self, obj_dml_data):
 
@@ -295,10 +354,13 @@ class CausalInferenceModels:
             )
         
         if self.hp_params:
+            instrument_key = list(self.hp_params["random_forest"].keys())[2]
+            endogenous_key = list(self.hp_params["random_forest"]['ml_l'].keys())[0]
+
             # Extract hyperparameters for ml_l, ml_m, and ml_r
-            ml_l_params = self.hp_params["random_forest_hp"]['ml_l']['d'][0][0]
-            ml_r_params = self.hp_params["random_forest_hp"]['ml_r']['d'][0][0]
-            ml_m_params = self.hp_params["random_forest_hp"]['ml_m_instrument_1']['d'][0][0]  # Adjust this key based on the desired instrument
+            ml_l_params = self.hp_params["random_forest"]['ml_l'][endogenous_key][0][0]
+            ml_r_params = self.hp_params["random_forest"]['ml_r'][endogenous_key][0][0]
+            ml_m_params = self.hp_params["random_forest"][instrument_key][endogenous_key][0][0]  # Adjust this key based on the desired instrument
 
             # Create the RandomForestRegressor objects
             ml_l = create_rf_regressor(ml_l_params)
@@ -316,26 +378,28 @@ class CausalInferenceModels:
         self.logger.info("Run Random Forest")
 
         dml_pliv_obj_rf.fit()
-        results_df = self.generate_point_inference(fit_obj=dml_pliv_obj_rf, model_name="DML: Random Forests", framework="doubleml")
-                
-        return results_df # Display the DataFrame
+
+        results_df = self.generate_point_inference(fit_obj=dml_pliv_obj_rf, model_name="DML: Random Forests", framework="doubleml")        
+        rmse_rf = self.generate_rmse_df(dml_pliv_obj_rf.evaluate_learners(), "DML: Random Forests")
+
+        return results_df, rmse_rf # Display the DataFrame
 
 
-    def run_hyperparameter_tuning(self):
+    def run_hyperparameter_tuning(self, reading_tuned_hp, simulation_or_empirical):
 
         def define_tuning(params, model, obj_dml_data):
-
+            logger.info(f"Tuning for model {model}")
             learner = {
                 "random_forest":RandomForestRegressor(n_jobs=-1),
                 "xgboost":XGBRegressor(n_jobs=-1),
-                "lasso": make_pipeline(StandardScaler(), Lasso())
+                "lasso": make_pipeline(StandardScaler(), Lasso(max_iter=10000))
             }
 
             ml_l = clone(learner[model])
             ml_m = clone(learner[model])
             ml_r = clone(learner[model])
 
-            dml_pliv_obj = dml.DoubleMLPLIV(obj_dml_data, ml_l, ml_m, ml_r, n_folds=2)
+            dml_pliv_obj = dml.DoubleMLPLIV(obj_dml_data, ml_l, ml_m, ml_r, n_folds=5)
 
             # Perform hyperparameter tuning
             dml_pliv_obj.tune(params, search_mode='grid_search')
@@ -343,6 +407,22 @@ class CausalInferenceModels:
             with open(REPO_DIR / f"code/hyperparameters/empirical_{model}.json", 'w') as json_file:
                 json.dump(dml_pliv_obj.params, json_file, indent=4)
 
+        if reading_tuned_hp == True:
+            logger.info("Loading hyperparameters")
+            self.hp_params = {}
+            
+            for model_name in ["random_forest", "xgboost", "lasso"]:
+                if simulation_or_empirical == "empirical":
+                    path = REPO_DIR / f"code/hyperparameters/empirical_{model_name}.json"
+                else:
+                    path = REPO_DIR / f"code/hyperparameters/simulation_{model_name}.json"
+
+                with open(path, 'r') as file:
+                    # Load the JSON data
+                    self.hp_params[model_name]  = json.load(file)
+
+            return True
+        
         obj_dml_data = dml.DoubleMLClusterData(
             self.df, 
             y_col=self.y, 
@@ -408,9 +488,27 @@ class CausalInferenceModels:
 
         define_tuning(params=par_grids_xgb, model="xgboost", obj_dml_data=obj_dml_data)
 
+        # #################
+        # ## LASSO ##
+        # #################
+
+        par_grids_lasso = {
+            'ml_l': {
+                'lasso__alpha': [0.0005, 0.001, 0.01, 0.05, 0.1, 1, 10]
+            },
+            'ml_m': {
+                'lasso__alpha': [0.0005, 0.001, 0.01, 0.05, 0.1, 1, 10]
+            },
+            'ml_r': {
+                'lasso__alpha': [0.0005, 0.001, 0.01, 0.05, 0.1, 1, 10]
+            }
+        }
+        
+        define_tuning(params=par_grids_lasso, model="lasso", obj_dml_data=obj_dml_data)
+
         return "######## Hyperparameter tuning was successful! ########"
 
-    def run_dml_empirical_inference(self):
+    def run_dml_empirical_inference(self, how_many):
 
         obj_dml_data = dml.DoubleMLClusterData(
             self.df, 
@@ -421,21 +519,38 @@ class CausalInferenceModels:
             cluster_cols=self.unit_column
             )
         
-        random_forest_results = self.dml_random_forest(obj_dml_data)
-        gradient_boosting_results = self.dml_xgboost(obj_dml_data)
-        lasso_results = self.dml_lasso(obj_dml_data)
-
         list_of_results = []
+        merged_rmses = []
 
-        list_of_results.append([lasso_results, random_forest_results, gradient_boosting_results])
-            
-        # Flatten the list of lists
-        flat_list = [item for sublist in list_of_results for item in sublist]
+        round = 1
+        while round <= how_many:
 
-        # Convert the flattened list into a DataFrame
-        df_results = pd.DataFrame(flat_list)
+            logger.info(f"#### Simulation: {round}")
+            # Run models and store results
+            models_to_run = {
+                'Lasso': self.dml_lasso,
+                'XGBoost': self.dml_xgboost,
+                'Random Forest': self.dml_random_forest
+            }
+
+            for _, model_function in models_to_run.items():
+                results, rmse = model_function(obj_dml_data)
+
+                results["simulation"] = round
+                list_of_results.append(results)
+                merged_rmses.append(rmse)
+
+            round += 1
+
+        df_results = pd.DataFrame(list_of_results)
+        df_rmse = pd.DataFrame(merged_rmses)
 
         df_results.to_excel(
             REPO_DIR / "data/CONSOLIDATED_results_angrist_dml_noinstitutions.xlsx",
+            index=False
+        )
+
+        df_rmse.to_excel(
+            REPO_DIR / "data/learners_rmse.xlsx",
             index=False
         )

@@ -20,6 +20,7 @@ class ProcessingPipeline:
     def reading_data(self):
 
         df_immigration = pd.read_stata(self.path / "df_immigration.dta")
+        df_immigration['year_datetime'] = df_immigration['year'][:4]
         # Apply the function to the 'period' column
         df_immigration['year_datetime'] = df_immigration['year'].apply(self.convert_to_datetime)
         df_immigration['year_datetime'] = df_immigration['year_datetime'].dt.year
@@ -111,27 +112,42 @@ class ProcessingPipeline:
         data_filtered = df_immigration[
             (df_immigration['is'] == 0) & \
             (df_immigration['dman'] == 1) & \
-            (df_immigration['dold'] == 0)] # & (df_immigration['dold'] == 0)
+            (df_immigration['dold'] == 0)]
 
-        data_filtered = data_filtered[
-            (["country"]+
-             self.features["dependent"]+
-             self.features["endog"]+
-             self.model_features["institutions"]+
-             self.features["exog"]+
-             self.features["instruments"]+
-             self.features["year_index_variable"])].dropna()
-        
+        list_of_variables_to_be_selected = {
+            "with_institutions": (
+                ["country"]+
+                self.features["dependent"]+
+                self.features["endog"]+
+                self.model_features["institutions"]+
+                self.features["exog"]+
+                self.features["instruments"]+
+                self.features["year_index_variable"]),
+            "without_institutions": (
+                ["country"]+
+                self.features["dependent"]+
+                self.features["endog"]+
+                self.features["exog"]+
+                self.features["instruments"]+
+                self.features["year_index_variable"])
+        }
+
+        if self.interactions_institutions == True:
+            with_institutions_or_not = "with_institutions"
+        else:
+            with_institutions_or_not = "without_institutions"
+
+        data_filtered = data_filtered[list_of_variables_to_be_selected[with_institutions_or_not]].dropna()
         #country_without_is = [i for i in self.model_features["country"] if i not in ["is", 'ch', 'lu', 'gr']]
-        
         return data_filtered
 
     def run(self):
 
        df_immigration = self.reading_data()
+       self.defining_model_variables(df_immigration)
+
        df_immigration = self.variable_adjustments(df_immigration)
 
-       self.defining_model_variables(df_immigration)
 
        df_immigration_sample = self.get_sample(df_immigration)
 
