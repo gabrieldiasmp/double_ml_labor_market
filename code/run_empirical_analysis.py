@@ -17,7 +17,8 @@ def main(args):
 
     logger.info("--------- Cleaning data")
 
-    processing_pipeline = ProcessingPipeline(interactions_institutions=args.interaction_institutions)
+    processing_pipeline = ProcessingPipeline(
+        interactions_institutions=args.interaction_institutions)
     df_immigration = processing_pipeline.run()
     print("###############SHAPE AFTER PREPROCESSING: ", df_immigration.shape)
 
@@ -39,7 +40,8 @@ def main(args):
         unit_column='country', 
         time_column=features_cols["year_index_variable"][0],
         desired_alpha=0,
-        n=df_immigration['country'].nunique()
+        n=df_immigration['country'].nunique(),
+        env=args.env
         )
 
     logger.info("--------- Run hyperparameter tuning")
@@ -51,7 +53,9 @@ def main(args):
 
     logger.info("--------- Run inference")
 
-    models.run_dml_empirical_inference(args.how_many)
+    models.run_dml_empirical_inference(
+        how_many=args.how_many,
+        with_institutions=args.interaction_institutions)
 
     logger.info("-----  success!! -----")
     return True
@@ -66,6 +70,7 @@ if __name__ == "__main__":
     parser.add_argument('--read_hps', type=bool, default=True, help='Activate hyperparameter mode (default: True)')
     parser.add_argument('--how_many', type=int, default=1, help='How many simulations? (default: 1)')
     parser.add_argument('--interaction_institutions', type=bool, default=False, help='Interaction with institutions?')
+    parser.add_argument('--env', type=str, default="dev", help='Dev or prd? If dev, the process will write in tst tables')
 
     # Parse the command-line arguments
     args = parser.parse_args()

@@ -35,7 +35,8 @@ class CausalInferenceModels:
             x_columns: list=None,
             n: int = None,
             desired_alpha: float=None,
-            hp_params: json=None): #z_columns: list
+            hp_params: json=None,
+            env: str="dev"): #z_columns: list
         self.df = df
         self.y = y_column
         self.x = x_columns
@@ -51,6 +52,28 @@ class CausalInferenceModels:
         self.time_column = time_column
         self.alpha = desired_alpha
         self.hp_params = hp_params
+        self.env = env
+
+    def define_paths(self, env, with_institutions):
+        paths = {
+            "dev": {
+                "dml_no_institutions": REPO_DIR / "data/CONSOLIDATED_results_angrist_dml_noinstitutions_TST.xlsx", 
+                "dml_with_institutions": REPO_DIR / "data/CONSOLIDATED_results_angrist_dml_winstitutions_TST.xlsx",
+                "rmse_learners": REPO_DIR / "data/CONSOLIDATED_learners_rmse_TST.xlsx"
+            },
+            "prd": {
+                "dml_no_institutions": REPO_DIR / "data/CONSOLIDATED_results_angrist_dml_noinstitutions.xlsx", 
+                "dml_with_institutions": REPO_DIR / "data/CONSOLIDATED_results_angrist_dml_winstitutions.xlsx",
+                "rmse_learners": REPO_DIR / "data/CONSOLIDATED_learners_rmse_.xlsx"
+            }
+        }
+
+        if with_institutions is True:        
+            with_or_without_institutions = "dml_with_institutions"
+        else:
+            with_or_without_institutions = "dml_no_institutions"
+        
+        return paths[env][with_or_without_institutions], paths[env]["rmse_learners"]
 
     def generate_point_inference(self, fit_obj, model_name, framework):
         self.actual_fitted_model = fit_obj
@@ -508,7 +531,7 @@ class CausalInferenceModels:
 
         return "######## Hyperparameter tuning was successful! ########"
 
-    def run_dml_empirical_inference(self, how_many):
+    def run_dml_empirical_inference(self, how_many, with_institutions):
 
         obj_dml_data = dml.DoubleMLClusterData(
             self.df, 
@@ -536,21 +559,34 @@ class CausalInferenceModels:
             for _, model_function in models_to_run.items():
                 results, rmse = model_function(obj_dml_data)
 
+                print(results)
+                print(type(results))
+
+                print(rmse)
+                print(type(rmse))
+
                 results["simulation"] = round
                 list_of_results.append(results)
                 merged_rmses.append(rmse)
 
             round += 1
 
-        df_results = pd.DataFrame(list_of_results)
+        if with_institutions == True:
+            # Concatenate all DataFrames
+            df_results = pd.concat(list_of_results, axis=0)
+        else:
+            df_results = pd.DataFrame(list_of_results)
+        
         df_rmse = pd.DataFrame(merged_rmses)
 
+        path_results, path_rmse_learners = self.define_paths(env=self.env, with_institutions=with_institutions)
+
         df_results.to_excel(
-            REPO_DIR / "data/CONSOLIDATED_results_angrist_dml_noinstitutions.xlsx",
+            path_results,
             index=False
         )
 
         df_rmse.to_excel(
-            REPO_DIR / "data/learners_rmse.xlsx",
+            path_rmse_learners,
             index=False
         )
