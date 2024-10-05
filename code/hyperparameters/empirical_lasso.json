@@ -1,0 +1,107 @@
+{
+    "ml_l": {
+        "lnf_lf1": [
+            [
+                {
+                    "lasso__alpha": 0.0005
+                },
+                {
+                    "lasso__alpha": 0.0005
+                },
+                {
+                    "lasso__alpha": 0.0005
+                },
+                {
+                    "lasso__alpha": 0.0005
+                },
+                {
+                    "lasso__alpha": 0.0005
+                }
+            ]
+        ]
+    },
+    "ml_r": {
+        "lnf_lf1": [
+            [
+                {
+                    "lasso__alpha": 0.0005
+                },
+                {
+                    "lasso__alpha": 0.0005
+                },
+                {
+                    "lasso__alpha": 0.0005
+                },
+                {
+                    "lasso__alpha": 0.0005
+                },
+                {
+                    "lasso__alpha": 0.0005
+                }
+            ]
+        ]
+    },
+    "ml_m_nbospr1": {
+        "lnf_lf1": [
+            [
+                {
+                    "lasso__alpha": 0.001
+                },
+                {
+                    "lasso__alpha": 0.001
+                },
+                {
+                    "lasso__alpha": 0.001
+                },
+                {
+                    "lasso__alpha": 0.001
+                },
+                {
+                    "lasso__alpha": 0.001
+                }
+            ]
+        ]
+    },
+    "ml_m_nowarpr1": {
+        "lnf_lf1": [
+            [
+                {
+                    "lasso__alpha": 0.01
+                },
+                {
+                    "lasso__alpha": 0.01
+                },
+                {
+                    "lasso__alpha": 0.01
+                },
+                {
+                    "lasso__alpha": 0.01
+                },
+                {
+                    "lasso__alpha": 0.01
+                }
+            ]
+        ]
+    },
+    "ml_m_nkospr1": {
+        "lnf_lf1": [
+            [
+                {
+                    "lasso__alpha": 0.001
+                },
+                {
+                    "lasso__alpha": 0.001
+                },
+                {
+                    "lasso__alpha": 0.001
+                },
+                {
+                    "lasso__alpha": 0.001
+                },
+                {
+                    "lasso__alpha": 0.001
+                }
+            ]
+        ]
+    }
+}

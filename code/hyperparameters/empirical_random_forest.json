@@ -1,0 +1,102 @@
+{
+    "ml_l": {
+        "lnf_lf1": [
+            [
+                {
+                    "ccp_alpha": 0.0,
+                    "max_depth": 20,
+                    "max_features": 50,
+                    "min_samples_leaf": 1,
+                    "n_estimators": 200
+                },
+                {
+                    "ccp_alpha": 0.0,
+                    "max_depth": 20,
+                    "max_features": 50,
+                    "min_samples_leaf": 1,
+                    "n_estimators": 200
+                }
+            ]
+        ]
+    },
+    "ml_r": {
+        "lnf_lf1": [
+            [
+                {
+                    "ccp_alpha": 0.0,
+                    "max_depth": 20,
+                    "max_features": 20,
+                    "min_samples_leaf": 1,
+                    "n_estimators": 200
+                },
+                {
+                    "ccp_alpha": 0.0,
+                    "max_depth": 20,
+                    "max_features": 20,
+                    "min_samples_leaf": 1,
+                    "n_estimators": 200
+                }
+            ]
+        ]
+    },
+    "ml_m_nbospr1": {
+        "lnf_lf1": [
+            [
+                {
+                    "ccp_alpha": 0.0,
+                    "max_depth": 10,
+                    "max_features": 100,
+                    "min_samples_leaf": 1,
+                    "n_estimators": 100
+                },
+                {
+                    "ccp_alpha": 0.0,
+                    "max_depth": 10,
+                    "max_features": 100,
+                    "min_samples_leaf": 1,
+                    "n_estimators": 100
+                }
+            ]
+        ]
+    },
+    "ml_m_nowarpr1": {
+        "lnf_lf1": [
+            [
+                {
+                    "ccp_alpha": 0.0,
+                    "max_depth": 3,
+                    "max_features": 100,
+                    "min_samples_leaf": 1,
+                    "n_estimators": 200
+                },
+                {
+                    "ccp_alpha": 0.0,
+                    "max_depth": 3,
+                    "max_features": 100,
+                    "min_samples_leaf": 1,
+                    "n_estimators": 200
+                }
+            ]
+        ]
+    },
+    "ml_m_nkospr1": {
+        "lnf_lf1": [
+            [
+                {
+                    "ccp_alpha": 0.0,
+                    "max_depth": 10,
+                    "max_features": 100,
+                    "min_samples_leaf": 4,
+                    "n_estimators": 200
+                },
+                {
+                    "ccp_alpha": 0.0,
+                    "max_depth": 10,
+                    "max_features": 100,
+                    "min_samples_leaf": 4,
+                    "n_estimators": 200
+                }
+            ]
+        ]
+    }
+}

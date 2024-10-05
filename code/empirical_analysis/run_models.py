@@ -1,18 +1,10 @@
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import random 
 import json
 
 import doubleml as dml
-
-# from doubleml.datasets import (
-#     make_plr_CCDDHNR2018, #Linear Regression
-#     make_pliv_CHS2015, #Instrumental variables
-#     make_did_SZ2020, #DiD,
-#     make_pliv_multiway_cluster_CKMS2021 #Panel Data
-# )
-
-#from linearmodels.panel.utility import generate_panel_data
 
 # Main imports
 from sklearn.base import clone
@@ -25,13 +17,12 @@ from xgboost import XGBRegressor
 
 from linearmodels.iv import IV2SLS
 
-from econml.iv.dml import NonParamDMLIV, DMLIV
-from econml.sklearn_extensions.linear_model import StatsModelsLinearRegression
+from utils.logging_configs import setup_logging
+logger = setup_logging('run_models.log')
 
-from logging_configs import setup_logging_simulation
-logger = setup_logging_simulation('model_simulation.log')
 
-HYPERPARAMETERS_PATH = json_path = "/Users/gabrieldiasmp/Documents/pasta_gabriel/codigo/master_thesis/code/hyperparameters/"
+REPO_DIR = Path(__file__).parent.parent.parent
+
 
 class CausalInferenceModels:
     def __init__(
@@ -41,10 +32,11 @@ class CausalInferenceModels:
             unit_column: str,
             time_column: str,
             z_columns: list=None,
-            x_columns: list = None,
+            x_columns: list=None,
             n: int = None,
             desired_alpha: float=None,
-            hp_params: json=None): #z_columns: list
+            hp_params: json=None,
+            env: str="dev"): #z_columns: list
         self.df = df
         self.y = y_column
         self.x = x_columns
@@ -60,6 +52,28 @@ class CausalInferenceModels:
         self.time_column = time_column
         self.alpha = desired_alpha
         self.hp_params = hp_params
+        self.env = env
+
+    def define_paths(self, env, with_institutions):
+        paths = {
+            "dev": {
+                "dml_no_institutions": REPO_DIR / "data/CONSOLIDATED_results_angrist_dml_noinstitutions_TST.xlsx", 
+                "dml_with_institutions": REPO_DIR / "data/CONSOLIDATED_results_angrist_dml_winstitutions_TST.xlsx",
+                "rmse_learners": REPO_DIR / "data/CONSOLIDATED_learners_rmse_TST.xlsx"
+            },
+            "prd": {
+                "dml_no_institutions": REPO_DIR / "data/CONSOLIDATED_results_angrist_dml_noinstitutions.xlsx", 
+                "dml_with_institutions": REPO_DIR / "data/CONSOLIDATED_results_angrist_dml_winstitutions.xlsx",
+                "rmse_learners": REPO_DIR / "data/CONSOLIDATED_learners_rmse_.xlsx"
+            }
+        }
+
+        if with_institutions is True:        
+            with_or_without_institutions = "dml_with_institutions"
+        else:
+            with_or_without_institutions = "dml_no_institutions"
+        
+        return paths[env][with_or_without_institutions], paths[env]["rmse_learners"]
 
     def generate_point_inference(self, fit_obj, model_name, framework):
         self.actual_fitted_model = fit_obj
@@ -132,7 +146,16 @@ class CausalInferenceModels:
             results_df = generate_results_for_multiple_endogenous_variables(fit_obj, framework)
 
         return results_df
-    
+
+    def generate_rmse_df(self, nuisance_loss_dict, model):
+        df = {
+            'rmse_g(x)': nuisance_loss_dict['ml_l'][0][0],
+            'rmse_m(x)': nuisance_loss_dict['ml_r'][0][0],
+            'model': model  
+        }
+
+        return df
+
     def pooled_2sls(self):
         df_2sls = self.df.copy()
         # Convert to panel data format
@@ -234,12 +257,33 @@ class CausalInferenceModels:
 
     def dml_lasso(self, obj_dml_data):
 
-        # For Lasso
-        learner_lasso = make_pipeline(StandardScaler(), Lasso(alpha=0.01, max_iter=1000, random_state = random.seed(1234)))
+        if self.hp_params:
+            logger.info("Reading LASSO hyperparameters")
+            instrument_key = list(self.hp_params["lasso"].keys())[2]
+            endogenous_key = list(self.hp_params["lasso"]['ml_l'].keys())[0]
 
-        ml_l_lasso = clone(learner_lasso)
-        ml_m_lasso = clone(learner_lasso)
-        ml_r_lasso = clone(learner_lasso)
+            # Extract hyperparameters for ml_l, ml_m, and ml_r
+            ml_l_params = self.hp_params["lasso"]['ml_l'][endogenous_key][0][0]
+            ml_r_params = self.hp_params["lasso"]['ml_r'][endogenous_key][0][0]
+            ml_m_params = self.hp_params["lasso"][instrument_key][endogenous_key][0][0]  # Adjust this key based on the desired instrument
+
+            def create_lasso_regressor(params):
+                return make_pipeline(
+                    StandardScaler(), 
+                    Lasso(alpha=params["lasso__alpha"], max_iter=10000, random_state = random.seed(1234)))
+
+            # Create the RandomForestRegressor objects
+            ml_l_lasso = create_lasso_regressor(ml_l_params)
+            ml_m_lasso = create_lasso_regressor(ml_m_params)
+            ml_r_lasso = create_lasso_regressor(ml_r_params)
+
+        else:
+            learner_lasso = make_pipeline(StandardScaler(), Lasso(alpha=0.05, max_iter=1000, random_state = random.seed(1234)))
+
+            ml_l_lasso = clone(learner_lasso)
+            ml_m_lasso = clone(learner_lasso)
+            ml_r_lasso = clone(learner_lasso)
+
 
         # For Lasso
         dml_pliv_obj_lasso = dml.DoubleMLPLIV(obj_dml_data, ml_l_lasso, ml_m_lasso, ml_r_lasso)
@@ -248,16 +292,43 @@ class CausalInferenceModels:
         lasso_fit = dml_pliv_obj_lasso.fit()
 
         results_df = self.generate_point_inference(fit_obj=lasso_fit, model_name="DML: LASSO", framework="doubleml")
-                
-        return results_df # Display the DataFrame
+
+        rmse_lasso = self.generate_rmse_df(dml_pliv_obj_lasso.evaluate_learners(), "DML: LASSO")
+
+        return results_df, rmse_lasso # Display the DataFrame
 
     def dml_xgboost(self, obj_dml_data):
-        learner_boosting = XGBRegressor(n_jobs=-1, objective = "reg:squarederror",
-                            eta=0.1, n_estimators=50)
-        
-        ml_l_boosting = clone(learner_boosting)
-        ml_m_boosting = clone(learner_boosting)
-        ml_r_boosting = clone(learner_boosting)
+
+        if self.hp_params:
+            instrument_key = list(self.hp_params["xgboost"].keys())[2]
+            endogenous_key = list(self.hp_params["xgboost"]['ml_l'].keys())[0]
+
+            # Extract hyperparameters for ml_l, ml_m, and ml_r
+            ml_l_params = self.hp_params["xgboost"]['ml_l'][endogenous_key][0][0]
+            ml_r_params = self.hp_params["xgboost"]['ml_r'][endogenous_key][0][0]
+            ml_m_params = self.hp_params["xgboost"][instrument_key][endogenous_key][0][0]  # Adjust this key based on the desired instrument
+
+            def create_xgboost_regressor(params):
+                return XGBRegressor(
+                    learning_rate=params['learning_rate'],
+                    max_depth=params['max_depth'],
+                    n_estimators=params['n_estimators'],
+                    n_jobs=-1  # Use all available cores
+                )
+
+            # Create the RandomForestRegressor objects
+            ml_l_boosting = create_xgboost_regressor(ml_l_params)
+            ml_m_boosting = create_xgboost_regressor(ml_m_params)
+            ml_r_boosting = create_xgboost_regressor(ml_r_params)
+
+        else:
+            learner_boosting = XGBRegressor(n_jobs=-1, objective = "reg:squarederror",
+                                eta=0.1, n_estimators=50)
+            
+            ml_l_boosting = clone(learner_boosting)
+            ml_m_boosting = clone(learner_boosting)
+            ml_r_boosting = clone(learner_boosting)
+
 
         # For boosting
         dml_pliv_obj_boosting = dml.DoubleMLPLIV(obj_dml_data, ml_l_boosting, ml_m_boosting, ml_r_boosting)
@@ -266,8 +337,10 @@ class CausalInferenceModels:
         fit_obj = dml_pliv_obj_boosting.fit()  # Fit and show summary for boosting
 
         results_df = self.generate_point_inference(fit_obj=fit_obj, model_name="DML: XGBoost", framework="doubleml")
-                
-        return results_df # Display the DataFrame
+
+        rmse_xgboost = self.generate_rmse_df(dml_pliv_obj_boosting.evaluate_learners(), "DML: XGBoost")
+
+        return results_df, rmse_xgboost # Display the DataFrame
 
     def dml_gbm(self, obj_dml_data):
         learner_boosting = GradientBoostingRegressor(n_estimators=20, max_depth=5, learning_rate=0.01, random_state = random.seed(1234), n_jobs=-1)
@@ -285,7 +358,7 @@ class CausalInferenceModels:
 
         results_df = self.generate_point_inference(fit_obj=fit_obj, model_name="DML: Gradient Boosting", framework="doubleml")
                 
-        return results_df # Display the DataFrame
+        return results_df, fit_obj # Display the DataFrame
 
     def dml_random_forest(self, obj_dml_data):
 
@@ -304,10 +377,13 @@ class CausalInferenceModels:
             )
         
         if self.hp_params:
+            instrument_key = list(self.hp_params["random_forest"].keys())[2]
+            endogenous_key = list(self.hp_params["random_forest"]['ml_l'].keys())[0]
+
             # Extract hyperparameters for ml_l, ml_m, and ml_r
-            ml_l_params = self.hp_params["random_forest_hp"]['ml_l']['d'][0][0]
-            ml_m_params = self.hp_params["random_forest_hp"]['ml_m_instrument_1']['d'][0][0]  # Adjust this key based on the desired instrument
-            ml_r_params = self.hp_params["random_forest_hp"]['ml_r']['d'][0][0]
+            ml_l_params = self.hp_params["random_forest"]['ml_l'][endogenous_key][0][0]
+            ml_r_params = self.hp_params["random_forest"]['ml_r'][endogenous_key][0][0]
+            ml_m_params = self.hp_params["random_forest"][instrument_key][endogenous_key][0][0]  # Adjust this key based on the desired instrument
 
             # Create the RandomForestRegressor objects
             ml_l = create_rf_regressor(ml_l_params)
@@ -320,54 +396,197 @@ class CausalInferenceModels:
             ml_m = clone(learner)
             ml_r = clone(learner)
 
-        dml_pliv_obj_rf = dml.DoubleMLPLIV(obj_dml_data, ml_l, ml_m, ml_r)
+        dml_pliv_obj_rf = dml.DoubleMLPLIV(obj_dml_data, ml_l=ml_l, ml_m=ml_m, ml_r=ml_r)
 
         self.logger.info("Run Random Forest")
 
         dml_pliv_obj_rf.fit()
-        results_df = self.generate_point_inference(fit_obj=dml_pliv_obj_rf, model_name="DML: Random Forests", framework="doubleml")
-                
-        return results_df # Display the DataFrame
 
-    def econml_doubleml(self, model_y, model_t, model_z, model_final):
+        results_df = self.generate_point_inference(fit_obj=dml_pliv_obj_rf, model_name="DML: Random Forests", framework="doubleml")        
+        rmse_rf = self.generate_rmse_df(dml_pliv_obj_rf.evaluate_learners(), "DML: Random Forests")
+
+        return results_df, rmse_rf # Display the DataFrame
+
+
+    def run_hyperparameter_tuning(self, reading_tuned_hp, simulation_or_empirical):
+
+        def define_tuning(params, model, obj_dml_data):
+            logger.info(f"Tuning for model {model}")
+            learner = {
+                "random_forest":RandomForestRegressor(n_jobs=-1),
+                "xgboost":XGBRegressor(n_jobs=-1),
+                "lasso": make_pipeline(StandardScaler(), Lasso(max_iter=10000))
+            }
+
+            ml_l = clone(learner[model])
+            ml_m = clone(learner[model])
+            ml_r = clone(learner[model])
+
+            dml_pliv_obj = dml.DoubleMLPLIV(obj_dml_data, ml_l, ml_m, ml_r, n_folds=5)
+
+            # Perform hyperparameter tuning
+            dml_pliv_obj.tune(params, search_mode='grid_search')
+
+            with open(REPO_DIR / f"code/hyperparameters/empirical_{model}.json", 'w') as json_file:
+                json.dump(dml_pliv_obj.params, json_file, indent=4)
+
+        if reading_tuned_hp == True:
+            logger.info("Loading hyperparameters")
+            self.hp_params = {}
+            
+            for model_name in ["random_forest", "xgboost", "lasso"]:
+                if simulation_or_empirical == "empirical":
+                    path = REPO_DIR / f"code/hyperparameters/empirical_{model_name}.json"
+                else:
+                    path = REPO_DIR / f"code/hyperparameters/simulation_{model_name}.json"
+
+                with open(path, 'r') as file:
+                    # Load the JSON data
+                    self.hp_params[model_name]  = json.load(file)
+
+            return True
         
-        # Generate dummy columns using pd.get_dummies()
-        dummy_columns = pd.get_dummies(self.df[self.unit_column], prefix='individual', dtype=int)
+        obj_dml_data = dml.DoubleMLClusterData(
+            self.df, 
+            y_col=self.y, 
+            x_cols=self.x, 
+            d_cols=self.d, 
+            z_cols=self.z, 
+            cluster_cols=self.unit_column
+            )
 
-        # Concatenate the dummy columns with the original DataFrame
-        df_with_dummies = pd.concat([self.df, dummy_columns], axis=1)
+        #################
+        ## Random Forest
+        #################
+        logger.info("Hyperparameter tuning Random Forest")
 
-        # Concatenate the dummy columns with the original DataFrame
-        dummy_columns = pd.get_dummies(self.df[self.time_column], prefix='time', dtype=int)
-        df_with_dummies = pd.concat([df_with_dummies, dummy_columns], axis=1)
-        df_with_dummies
+        par_grids_rf = {
+            'ml_l': {
+                'n_estimators': [50, 100, 200],
+                'max_features': [20, 50, 100],
+                'max_depth': [3, 5, 10, 20],
+                'min_samples_leaf': [1, 2, 4],
+                'ccp_alpha': [0.0, 0.01, 0.1]
+            },
+            'ml_r': {
+                'n_estimators': [50, 100, 200],
+                'max_features': [20, 50, 100],
+                'max_depth': [3, 5, 10, 20],
+                'min_samples_leaf': [1, 2, 4],
+                'ccp_alpha': [0.0, 0.01, 0.1]
+            },
+            'ml_m': {
+                'n_estimators': [50, 100, 200],
+                'max_features': [20, 50, 100],
+                'max_depth': [3, 5, 10, 20],
+                'min_samples_leaf': [1, 2, 4],
+                'ccp_alpha': [0.0, 0.01, 0.1]
+            }
+        }
+        
+        define_tuning(params=par_grids_rf, model="random_forest", obj_dml_data=obj_dml_data)
 
-        individual_columns = [column for column in df_with_dummies.columns if column.split("_")[0] == "individual"]
-        time_columns = [column for column in df_with_dummies.columns if column.split("_")[0] == "time"]
+        # #################
+        # ## XGBoost
+        # #################
+        logger.info("Hyperparameter tuning XGBoost")
 
-        # Compute first differences for all variables
-        df_with_dummies.set_index([self.unit_column, self.time_column], inplace=True)
-        df_with_diff = df_with_dummies.groupby(level=self.unit_column).diff().dropna()
+        par_grids_xgb = {
+            'ml_l': {
+                'n_estimators': [50, 100, 200],
+                'max_depth': [3, 5, 10, 20],
+                'learning_rate': [0.01, 0.05, 0.1]
+            },
+            'ml_m': {
+                'n_estimators': [50, 100, 200],
+                'max_depth': [3, 5, 10, 20],
+                'learning_rate': [0.01, 0.05, 0.1]
+            },
+            'ml_r': {
+                'n_estimators': [50, 100, 200],
+                'max_depth': [3, 5, 10, 20],
+                'learning_rate': [0.01, 0.05, 0.1]
+            }
+        }
 
-        df_with_diff = df_with_diff.reset_index()
+        define_tuning(params=par_grids_xgb, model="xgboost", obj_dml_data=obj_dml_data)
 
-        x_cols = individual_columns+time_columns
-    
-        # obj_dml_data = dml.DoubleMLClusterData(
-        #     df_with_diff, y_col=self.y, d_cols=self.d, 
-        #     x_cols=individual_columns+time_columns , #+time_columns 
-        #     z_cols=instrument_columns, cluster_cols=self.unit_column)
+        # #################
+        # ## LASSO ##
+        # #################
 
-        est = DMLIV(
-            model_y_xw=model_y, 
-            model_t_xw=model_t,
-            model_t_xwz=model_z,
-            model_final=model_final,
-            #model_final=StatsModelsLinearRegression(),
-            #discrete_treatment=True, discrete_instrument=True, #NonParamDMLIV
-            cv=5
+        par_grids_lasso = {
+            'ml_l': {
+                'lasso__alpha': [0.0005, 0.001, 0.01, 0.05, 0.1, 1, 10]
+            },
+            'ml_m': {
+                'lasso__alpha': [0.0005, 0.001, 0.01, 0.05, 0.1, 1, 10]
+            },
+            'ml_r': {
+                'lasso__alpha': [0.0005, 0.001, 0.01, 0.05, 0.1, 1, 10]
+            }
+        }
+        
+        define_tuning(params=par_grids_lasso, model="lasso", obj_dml_data=obj_dml_data)
+
+        return "######## Hyperparameter tuning was successful! ########"
+
+    def run_dml_empirical_inference(self, how_many, with_institutions):
+
+        obj_dml_data = dml.DoubleMLClusterData(
+            self.df, 
+            y_col=self.y, 
+            x_cols=self.x, 
+            d_cols=self.d, 
+            z_cols=self.z, 
+            cluster_cols=self.unit_column
+            )
+        
+        list_of_results = []
+        merged_rmses = []
+
+        round = 1
+        while round <= how_many:
+
+            logger.info(f"#### Simulation: {round}")
+            # Run models and store results
+            models_to_run = {
+                'Lasso': self.dml_lasso,
+                'XGBoost': self.dml_xgboost,
+                'Random Forest': self.dml_random_forest
+            }
+
+            for _, model_function in models_to_run.items():
+                results, rmse = model_function(obj_dml_data)
+
+                print(results)
+                print(type(results))
+
+                print(rmse)
+                print(type(rmse))
+
+                results["simulation"] = round
+                list_of_results.append(results)
+                merged_rmses.append(rmse)
+
+            round += 1
+
+        if with_institutions == True:
+            # Concatenate all DataFrames
+            df_results = pd.concat(list_of_results, axis=0)
+        else:
+            df_results = pd.DataFrame(list_of_results)
+        
+        df_rmse = pd.DataFrame(merged_rmses)
+
+        path_results, path_rmse_learners = self.define_paths(env=self.env, with_institutions=with_institutions)
+
+        df_results.to_excel(
+            path_results,
+            index=False
         )
-        
-        estimator = est.fit(Y=df_with_diff[self.y], T=df_with_diff[self.d], Z=df_with_diff[self.z], X=df_with_diff[x_cols], inference='bootstrap')
 
-        return estimator
+        df_rmse.to_excel(
+            path_rmse_learners,
+            index=False
+        )
