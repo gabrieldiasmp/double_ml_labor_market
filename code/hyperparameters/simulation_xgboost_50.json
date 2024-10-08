@@ -1,0 +1,374 @@
+{
+    "ml_l": {
+        "d": [
+            [
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                }
+            ]
+        ]
+    },
+    "ml_r": {
+        "d": [
+            [
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_1": {
+        "d": [
+            [
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_2": {
+        "d": [
+            [
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_3": {
+        "d": [
+            [
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_4": {
+        "d": [
+            [
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_5": {
+        "d": [
+            [
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_6": {
+        "d": [
+            [
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 100
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_7": {
+        "d": [
+            [
+                {
+                    "learning_rate": 0.1,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.1,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.1,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.1,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.1,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_8": {
+        "d": [
+            [
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_9": {
+        "d": [
+            [
+                {
+                    "learning_rate": 0.1,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.1,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.1,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.1,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.1,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_10": {
+        "d": [
+            [
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                },
+                {
+                    "learning_rate": 0.05,
+                    "max_depth": 3,
+                    "n_estimators": 50
+                }
+            ]
+        ]
+    }
+}

@@ -1,0 +1,254 @@
+{
+    "ml_l": {
+        "d": [
+            [
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                }
+            ]
+        ]
+    },
+    "ml_r": {
+        "d": [
+            [
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_1": {
+        "d": [
+            [
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_2": {
+        "d": [
+            [
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_3": {
+        "d": [
+            [
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_4": {
+        "d": [
+            [
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_5": {
+        "d": [
+            [
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_6": {
+        "d": [
+            [
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_7": {
+        "d": [
+            [
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_8": {
+        "d": [
+            [
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_9": {
+        "d": [
+            [
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                }
+            ]
+        ]
+    },
+    "ml_m_instrument_10": {
+        "d": [
+            [
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                },
+                {
+                    "lasso__alpha": 0.1
+                }
+            ]
+        ]
+    }
+}

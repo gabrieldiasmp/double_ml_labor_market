@@ -68,7 +68,7 @@ class CausalInferenceModels:
             }
         }
 
-        if with_institutions is True:        
+        if bool(with_institutions) is True:        
             with_or_without_institutions = "dml_with_institutions"
         else:
             with_or_without_institutions = "dml_no_institutions"
@@ -211,7 +211,7 @@ class CausalInferenceModels:
 
         return results_df
     
-    def prepare_dml_data(self) -> dml.DoubleMLClusterData:
+    def prepare_dml_simulation_data(self) -> dml.DoubleMLClusterData:
         # Generate dummy columns using pd.get_dummies()
         dummy_columns = pd.get_dummies(self.df[self.unit_column], prefix='individual', dtype=int)
 
@@ -254,6 +254,16 @@ class CausalInferenceModels:
          
         return obj_dml_data
     
+    def prepare_dml_empirical_data(self) -> dml.DoubleMLClusterData:
+        return dml.DoubleMLClusterData(
+            self.df, 
+            y_col=self.y, 
+            x_cols=self.x, 
+            d_cols=self.d, 
+            z_cols=self.z, 
+            cluster_cols=self.unit_column
+            )
+
 
     def dml_lasso(self, obj_dml_data):
 
@@ -427,10 +437,11 @@ class CausalInferenceModels:
             # Perform hyperparameter tuning
             dml_pliv_obj.tune(params, search_mode='grid_search')
 
-            with open(REPO_DIR / f"code/hyperparameters/empirical_{model}.json", 'w') as json_file:
+            with open(REPO_DIR / f"code/hyperparameters/{simulation_or_empirical}_{model}.json", 'w') as json_file:
                 json.dump(dml_pliv_obj.params, json_file, indent=4)
+            pass
 
-        if reading_tuned_hp == True:
+        if bool(reading_tuned_hp) == True:
             logger.info("Loading hyperparameters")
             self.hp_params = {}
             
@@ -445,42 +456,38 @@ class CausalInferenceModels:
                     self.hp_params[model_name]  = json.load(file)
 
             return True
-        
-        obj_dml_data = dml.DoubleMLClusterData(
-            self.df, 
-            y_col=self.y, 
-            x_cols=self.x, 
-            d_cols=self.d, 
-            z_cols=self.z, 
-            cluster_cols=self.unit_column
-            )
+
+        if simulation_or_empirical == "empirical":
+            obj_dml_data = self.prepare_dml_empirical_data()
+        elif simulation_or_empirical == "simulation":
+            obj_dml_data = self.prepare_dml_simulation_data()
+
 
         #################
         ## Random Forest
         #################
-        logger.info("Hyperparameter tuning Random Forest")
 
         par_grids_rf = {
             'ml_l': {
                 'n_estimators': [50, 100, 200],
                 'max_features': [20, 50, 100],
-                'max_depth': [3, 5, 10, 20],
+                'max_depth': [3, 5],
                 'min_samples_leaf': [1, 2, 4],
-                'ccp_alpha': [0.0, 0.01, 0.1]
+                'ccp_alpha': [0.0, 0.01]
             },
             'ml_r': {
                 'n_estimators': [50, 100, 200],
                 'max_features': [20, 50, 100],
-                'max_depth': [3, 5, 10, 20],
+                'max_depth': [3, 5],
                 'min_samples_leaf': [1, 2, 4],
-                'ccp_alpha': [0.0, 0.01, 0.1]
+                'ccp_alpha': [0.0, 0.01]
             },
             'ml_m': {
                 'n_estimators': [50, 100, 200],
                 'max_features': [20, 50, 100],
-                'max_depth': [3, 5, 10, 20],
+                'max_depth': [3, 5],
                 'min_samples_leaf': [1, 2, 4],
-                'ccp_alpha': [0.0, 0.01, 0.1]
+                'ccp_alpha': [0.0, 0.01]
             }
         }
         
@@ -494,18 +501,18 @@ class CausalInferenceModels:
         par_grids_xgb = {
             'ml_l': {
                 'n_estimators': [50, 100, 200],
-                'max_depth': [3, 5, 10, 20],
-                'learning_rate': [0.01, 0.05, 0.1]
+                'max_depth': [3, 5, 10],
+                'learning_rate': [0.05, 0.1]
             },
             'ml_m': {
                 'n_estimators': [50, 100, 200],
-                'max_depth': [3, 5, 10, 20],
-                'learning_rate': [0.01, 0.05, 0.1]
+                'max_depth': [3, 5, 10],
+                'learning_rate': [0.05, 0.1]
             },
             'ml_r': {
                 'n_estimators': [50, 100, 200],
-                'max_depth': [3, 5, 10, 20],
-                'learning_rate': [0.01, 0.05, 0.1]
+                'max_depth': [3, 5, 10],
+                'learning_rate': [0.05, 0.1]
             }
         }
 
@@ -532,16 +539,9 @@ class CausalInferenceModels:
         return "######## Hyperparameter tuning was successful! ########"
 
     def run_dml_empirical_inference(self, how_many, with_institutions):
-
-        obj_dml_data = dml.DoubleMLClusterData(
-            self.df, 
-            y_col=self.y, 
-            x_cols=self.x, 
-            d_cols=self.d, 
-            z_cols=self.z, 
-            cluster_cols=self.unit_column
-            )
         
+        obj_dml_data = self.prepare_dml_empirical_data()
+
         list_of_results = []
         merged_rmses = []
 
@@ -559,19 +559,13 @@ class CausalInferenceModels:
             for _, model_function in models_to_run.items():
                 results, rmse = model_function(obj_dml_data)
 
-                print(results)
-                print(type(results))
-
-                print(rmse)
-                print(type(rmse))
-
                 results["simulation"] = round
                 list_of_results.append(results)
                 merged_rmses.append(rmse)
 
             round += 1
 
-        if with_institutions == True:
+        if bool(with_institutions) == True:
             # Concatenate all DataFrames
             df_results = pd.concat(list_of_results, axis=0)
         else:
@@ -581,6 +575,8 @@ class CausalInferenceModels:
 
         path_results, path_rmse_learners = self.define_paths(env=self.env, with_institutions=with_institutions)
 
+        logger.info(path_results)
+        logger.info(df_results)
         df_results.to_excel(
             path_results,
             index=False

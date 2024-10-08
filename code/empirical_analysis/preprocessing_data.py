@@ -114,6 +114,10 @@ class ProcessingPipeline:
             (df_immigration['dman'] == 1) & \
             (df_immigration['dold'] == 0)]
 
+        return data_filtered
+
+    def filter_needed_columns_for_inference(self, data_filtered):
+
         list_of_variables_to_be_selected = {
             "with_institutions": (
                 ["country"]+
@@ -132,13 +136,14 @@ class ProcessingPipeline:
                 self.features["year_index_variable"])
         }
 
-        if self.interactions_institutions == True:
+        if bool(self.interactions_institutions) == True:
             with_institutions_or_not = "with_institutions"
         else:
             with_institutions_or_not = "without_institutions"
 
         data_filtered = data_filtered[list_of_variables_to_be_selected[with_institutions_or_not]].dropna()
         #country_without_is = [i for i in self.model_features["country"] if i not in ["is", 'ch', 'lu', 'gr']]
+
         return data_filtered
 
     def run(self):
