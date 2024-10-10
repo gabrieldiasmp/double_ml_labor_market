@@ -33,7 +33,8 @@ def main(args):
     features_cols = processing_pipeline.features
 
     df_filtered = processing_pipeline.filter_needed_columns_for_inference(df_immigration)
-    print("###############SHAPE AFTER PREPROCESSING: ", df_filtered.shape)
+
+    print("###############SHAPE AFTER FILTERS: ", df_filtered.shape)
 
     models = CausalInferenceModels(
         df=df_filtered,

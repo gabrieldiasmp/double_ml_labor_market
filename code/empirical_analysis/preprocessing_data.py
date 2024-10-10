@@ -86,7 +86,10 @@ class ProcessingPipeline:
         # Define endog, exog, and instruments based on the interactions_institutions flag
         if self.interactions_institutions:
             endog = self.model_features["non_eu_immigration_share"] + ['NEU_ep', 'NEU_ls', 'NEU_rr']
-            exog = self.model_features["years"] + self.model_features["ctrends"] + self.model_features["country"]
+            exog = (self.model_features["years"] +
+                    self.model_features["ctrends"] +
+                    self.model_features["country"]+
+                    self.model_features["population_variables"])
             instruments = self.model_instruments["inst3b"]
         else:
             endog = self.model_features["non_eu_immigration_share"]
@@ -136,7 +139,7 @@ class ProcessingPipeline:
                 self.features["year_index_variable"])
         }
 
-        if bool(self.interactions_institutions) == True:
+        if self.interactions_institutions == 'True':
             with_institutions_or_not = "with_institutions"
         else:
             with_institutions_or_not = "without_institutions"
@@ -149,10 +152,10 @@ class ProcessingPipeline:
     def run(self):
 
        df_immigration = self.reading_data()
+
        self.defining_model_variables(df_immigration)
 
        df_immigration = self.variable_adjustments(df_immigration)
-
 
        df_immigration_sample = self.get_sample(df_immigration)
 
