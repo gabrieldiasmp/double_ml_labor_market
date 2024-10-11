@@ -35,12 +35,10 @@ class ProcessingPipeline:
         return df_immigration
 
     def variable_adjustments(self, df_immigration):
-        # df_immigration["emp_prot"]=df_immigration["emp_prot"]-13
-        # df_immigration["lab_stan"]=(df_immigration["lab_stan"]-5)/1.9518
-        # df_immigration["rep_rate"]=(df_immigration["rep_rate"]-63)/17.70741
-        # df_immigration["ep"]=(df_immigration["bar_ent"]-1.715)/.604373
-
-        df_immigration["ep"]=df_immigration["bar_ent"]
+        df_immigration["emp_prot"]=df_immigration["emp_prot"]-13
+        df_immigration["lab_stan"]=(df_immigration["lab_stan"]-5)/1.9518
+        df_immigration["rep_rate"]=(df_immigration["rep_rate"]-63)/17.70741
+        df_immigration["ep"]=(df_immigration["bar_ent"]-1.715)/.604373
 
         df_immigration['NEU_ep'] = df_immigration['lnf_lf1'] * df_immigration['ep']
         df_immigration['NEU_ls'] = df_immigration['lnf_lf1'] * df_immigration['lab_stan']
