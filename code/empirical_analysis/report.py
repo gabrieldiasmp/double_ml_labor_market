@@ -12,11 +12,12 @@ class ReportPipeline:
         self.features = features
 
     def generate_descriptive_statistics(self):
-        df_immigration_statistics = self.df_immigration.loc[
+        df_immigration_statistics = self.df_immigration.copy()
+        df_immigration_statistics = df_immigration_statistics.loc[
             :, 
             ["country"]+self.features["dependent"]+self.features["endog"]+self.features["exog"]+self.features["institutions"]]
 
-        df_immigration_statistics["non_eu_immigrant_share"] = np.exp(df_immigration_statistics[self.features["endog"]])
+        df_immigration_statistics["non_eu_immigrant_share"] = np.exp(df_immigration_statistics[self.features["endog"][0]])
         df_immigration_statistics["eu_immigrant_share"] = np.exp(df_immigration_statistics["lneu_lf1"])
         df_immigration_statistics["employment"] = np.exp(df_immigration_statistics[self.features["dependent"]])
 

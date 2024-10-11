@@ -86,7 +86,10 @@ class ProcessingPipeline:
         # Define endog, exog, and instruments based on the interactions_institutions flag
         if self.interactions_institutions:
             endog = self.model_features["non_eu_immigration_share"] + ['NEU_ep', 'NEU_ls', 'NEU_rr']
-            exog = self.model_features["years"] + self.model_features["ctrends"] + self.model_features["country"]
+            exog = (self.model_features["years"] +
+                    self.model_features["ctrends"] +
+                    self.model_features["country"]+
+                    self.model_features["population_variables"])
             instruments = self.model_instruments["inst3b"]
         else:
             endog = self.model_features["non_eu_immigration_share"]
@@ -114,6 +117,10 @@ class ProcessingPipeline:
             (df_immigration['dman'] == 1) & \
             (df_immigration['dold'] == 0)]
 
+        return data_filtered
+
+    def filter_needed_columns_for_inference(self, data_filtered):
+
         list_of_variables_to_be_selected = {
             "with_institutions": (
                 ["country"]+
@@ -132,22 +139,23 @@ class ProcessingPipeline:
                 self.features["year_index_variable"])
         }
 
-        if self.interactions_institutions == True:
+        if self.interactions_institutions == 'True':
             with_institutions_or_not = "with_institutions"
         else:
             with_institutions_or_not = "without_institutions"
 
         data_filtered = data_filtered[list_of_variables_to_be_selected[with_institutions_or_not]].dropna()
         #country_without_is = [i for i in self.model_features["country"] if i not in ["is", 'ch', 'lu', 'gr']]
+
         return data_filtered
 
     def run(self):
 
        df_immigration = self.reading_data()
+
        self.defining_model_variables(df_immigration)
 
        df_immigration = self.variable_adjustments(df_immigration)
-
 
        df_immigration_sample = self.get_sample(df_immigration)
 
