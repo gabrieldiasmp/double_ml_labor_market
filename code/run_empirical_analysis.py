@@ -29,38 +29,38 @@ def main(args):
     descriptive_table = ReportPipeline(df_immigration, processing_pipeline.features).run()
     descriptive_table.to_excel(REPO_DIR / "data/tst_descriptive_statistics.xlsx")
 
-    # logger.info("--------- Run modeling")
-    # features_cols = processing_pipeline.features
+    logger.info("--------- Run modeling")
+    features_cols = processing_pipeline.features
 
-    # df_filtered = processing_pipeline.filter_needed_columns_for_inference(df_immigration)
+    df_filtered = processing_pipeline.filter_needed_columns_for_inference(df_immigration)
 
-    # print("###############SHAPE AFTER FILTERS: ", df_filtered.shape)
+    print("###############SHAPE AFTER FILTERS: ", df_filtered.shape)
 
-    # models = CausalInferenceModels(
-    #     df=df_filtered,
-    #     y_column=features_cols["dependent"][0], 
-    #     d_columns=features_cols["endog"],
-    #     x_columns=features_cols["exog"],
-    #     z_columns=features_cols["instruments"], 
-    #     unit_column='country', 
-    #     time_column=features_cols["year_index_variable"][0],
-    #     desired_alpha=0,
-    #     n=df_filtered['country'].nunique(),
-    #     env=args.env
-    #     )
+    models = CausalInferenceModels(
+        df=df_filtered,
+        y_column=features_cols["dependent"][0], 
+        d_columns=features_cols["endog"],
+        x_columns=features_cols["exog"],
+        z_columns=features_cols["instruments"], 
+        unit_column='country', 
+        time_column=features_cols["year_index_variable"][0],
+        desired_alpha=0,
+        n=df_filtered['country'].nunique(),
+        env=args.env
+        )
 
-    # logger.info("--------- Run hyperparameter tuning")
+    logger.info("--------- Run hyperparameter tuning")
 
-    # models.run_hyperparameter_tuning(
-    #     reading_tuned_hp=args.read_hps,
-    #     simulation_or_empirical="empirical"
-    # )
+    models.run_hyperparameter_tuning(
+        reading_tuned_hp=args.read_hps,
+        simulation_or_empirical="empirical"
+    )
 
-    # logger.info("--------- Run inference")
+    logger.info("--------- Run inference")
 
-    # models.run_dml_empirical_inference(
-    #     how_many=args.how_many,
-    #     with_institutions=args.interaction_institutions)
+    models.run_dml_empirical_inference(
+        how_many=args.how_many,
+        with_institutions=args.interaction_institutions)
 
     logger.info("-----  success!! -----")
     return True
