@@ -14,10 +14,10 @@ DATA_DIR = Path(__file__).parent.parent / "data"
 def main(args):
 
     # Simulation settings
-    n_values = [200] #, 50, 100, 200
+    n_values = [50, 100, 200]
     T = 10
     alpha = 0.5
-    num_simulations = 30
+    num_simulations = 100
 
     logger.info("################## STARTING THE PROCESS ##################")
 
