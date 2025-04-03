@@ -2,7 +2,7 @@
 
 ## Abstract
 This study focuses on estimation and inference in panel data models with
-unobserved individual-speci c heterogeneity in a high-dimensional context. The
+unobserved individual-specific heterogeneity in a high-dimensional context. The
 framework accommodates scenarios where the number of regressors is comparable
 to the sample size. Crucially, we model the individual-specific heterogeneity as fixed
 effects, allowing it to correlate with observed time-varying variables in an unspecified
@@ -29,12 +29,14 @@ You can create your own virtual environment using the requirements.txt file. The
 
 
 ## How to run the simulation
-At the main.py file, you can run the simulation that compares `Pooled OLS`, `FE 2SLS`, `DML: LASSO`, `DML: XGBoost` and `DML: Random Forest`. The simulation will compare different unit sizes `(15, 50, 100, 200)` at a fixed length size `(T = 10)`. 
+At the code/run_simulation_analysis.py file, you can run the simulation that compares `Pooled OLS`, `FE 2SLS`, `DML: LASSO`, `DML: XGBoost` and `DML: Random Forest`. The simulation will compare different unit sizes `(15, 50, 100, 200)` at a fixed length size `(T = 10)`. 
 
 
 To run the simulation, the steps are the following:
-- `python code/main.py`
+- `python code/run_simulation_analysis.py`
 
 ## How to run the empirical analysis
+At the code/run_empirical_analysis.py file, 1) data transformations are made in order to prepare the dataset for the modelling step, 2) hyperparameter tuning is made for each of the DML models and 3) the inference is calculated.
 
-To be done
+To run the empirical analysis, the steps are the following:
+- `python code/run_empirical_analysis.py`
